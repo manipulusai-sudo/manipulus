@@ -40,7 +40,7 @@ An "invisible interface" that uses simple hand gestures to control your computer
 
 1. **Clone or navigate to the project directory**
    ```bash
-   cd "/Users/sabrish/Desktop/Max Sat.Tech/manipulus v2.0"
+   cd manipulus
    ```
 
 2. **Create virtual environment**
@@ -109,7 +109,7 @@ settings:
 ## Project Structure
 
 ```
-manipulus v2.0/
+manipulus/
 ├── app.py                  # Main menu bar application
 ├── gesture_detector.py     # MediaPipe hand tracking
 ├── gesture_classifier.py   # Gesture recognition logic

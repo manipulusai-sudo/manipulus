@@ -1,6 +1,6 @@
 # Manipulus v2.0 - Quick Start Guide
 
-![Gesture Reference](file:///Users/sabrish/.gemini/antigravity/brain/313bc310-9210-43c1-955e-561c38203019/gesture_reference_guide_1767723148092.png)
+![Gesture Reference](gesture_reference_guide.png)
 
 ---
 
@@ -8,7 +8,7 @@
 
 ```bash
 # Navigate to project
-cd "/Users/sabrish/Desktop/Max Sat.Tech/manipulus v2.0"
+cd manipulus
 
 # Create virtual environment
 python3 -m venv venv
@@ -110,7 +110,7 @@ This is a **working prototype** with mocked actions. To add real integrations:
 3. **Use** `system_control.py` utilities for media keys
 4. **Test** with real apps (Spotify, Music, etc.)
 
-See [README.md](file:///Users/sabrish/Desktop/Max%20Sat.Tech/manipulus%20v2.0/README.md) for full documentation.
+See [README.md](README.md) for full documentation.
 
 ---
 

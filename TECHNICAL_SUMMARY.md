@@ -63,7 +63,7 @@ A fully functional desktop gesture control application for macOS that uses webca
 ## File Structure
 
 ```
-manipulus v2.0/
+manipulus/
 ├── Core Pipeline
 │   ├── gesture_detector.py      (MediaPipe integration)
 │   ├── gesture_classifier.py    (Geometric rules)
@@ -136,7 +136,7 @@ Invisible interface philosophy:
 ## How to Run
 
 ```bash
-cd "/Users/sabrish/Desktop/Max Sat.Tech/manipulus v2.0"
+cd manipulus
 source venv/bin/activate
 python app.py
 ```
