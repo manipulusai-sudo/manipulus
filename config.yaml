@@ -1,0 +1,20 @@
+gestures:
+  thumbs_up:
+    action: play_pause
+    description: "Play/Pause media"
+  peace:
+    action: next_track
+    description: "Next track"
+  open_palm:
+    action: volume_up
+    description: "Increase volume"
+  closed_fist:
+    action: volume_down
+    description: "Decrease volume"
+
+settings:
+  debounce_seconds: 1.0
+  camera_index: 0
+  min_detection_confidence: 0.7
+  min_tracking_confidence: 0.5
+  show_camera_preview: false
