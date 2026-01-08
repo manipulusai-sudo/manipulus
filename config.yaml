@@ -1,20 +1,17 @@
-gestures:
-  thumbs_up:
-    action: play_pause
-    description: "Play/Pause media"
-  peace:
-    action: next_track
-    description: "Next track"
-  open_palm:
-    action: volume_up
-    description: "Increase volume"
-  closed_fist:
-    action: volume_down
-    description: "Decrease volume"
+# Manipulus Configuration
+# 
+# Defines sensitivity thresholds and interaction boundaries.
+# Actual gesture mappings are loaded from the active profile.
 
-settings:
-  debounce_seconds: 1.0
-  camera_index: 0
-  min_detection_confidence: 0.7
-  min_tracking_confidence: 0.5
-  show_camera_preview: false
+system:
+  sample_rate_ms: 30
+  debounce_window_ms: 1000
+  
+interaction:
+  # Interaction zone depth (normalized)
+  activation_threshold: 0.6
+  release_threshold: 0.4
+
+feedback:
+  visual_overlay: false
+  haptic_enabled: false
