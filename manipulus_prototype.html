@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANIPULUS // INTENT-VALIDATION OS</title>
+    <!-- Load Handtrack.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/handtrackjs/dist/handtrack.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: rgba(20, 20, 20, 0.6);
+            --border-color: #333;
+            --accent-color: #0fdbaf;
+            /* Neon Green */
+            --accent-dim: rgba(15, 219, 175, 0.2);
+            --text-main: #e0e0e0;
+            --text-muted: #888;
+            --font-stack: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-stack);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            font-weight: 400;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+
+        /* MAIN LAYOUT */
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            height: calc(100vh - 80px);
+            /* Adjust for header/footer */
+        }
+
+        /* LEFT PANEL: VISION */
+        .vision-panel {
+            flex: 2;
+            position: relative;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        video {
+            position: absolute;
+            max-width: 100%;
+            max-height: 100%;
+            opacity: 0.6;
+            /* Slight dim for overlay visibility */
+            transform: scaleX(-1);
+            /* Mirror effect */
+        }
+
+        canvas#overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* ZONES OVERLAY */
+        .zones-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .zone {
+            flex: 1;
+            border-right: 1px dashed rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .zone:last-child {
+            border-right: none;
+        }
+
+        .zone-label {
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .zone.active {
+            background: linear-gradient(to top, rgba(15, 219, 175, 0.1), transparent);
+        }
+
+        .zone.active .zone-label {
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* VALIDATION RING */
+        .validation-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .zone.active .validation-indicator {
+            display: flex;
+        }
+
+        svg.progress-ring {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        circle {
+            fill: transparent;
+            stroke-width: 4;
+        }
+
+        circle.bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        circle.progress {
+            stroke: var(--accent-color);
+            stroke-dasharray: 314;
+            /* 2 * PI * 50 */
+            stroke-dashoffset: 314;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        /* RIGHT PANEL: DATA & LOGS */
+        .data-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* BLUEPRINT MAP */
+        .blueprint-container {
+            flex: 1;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .room-map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SVG Map Styles */
+        .map-svg {
+            width: 80%;
+            height: auto;
+            max-height: 200px;
+        }
+
+        .map-obj {
+            fill: transparent;
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .map-obj.active {
+            stroke: var(--accent-color);
+            fill: var(--accent-dim);
+            filter: drop-shadow(0 0 5px var(--accent-color));
+        }
+
+        /* SYSTEM CONSOLE - FIXED AS REQUESTED */
+        .console-container {
+            height: 300px;
+            flex: 0 0 300px;
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* COLUMN-REVERSE: New items naturally flow from bottom-up visually */
+        .console-logs {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column-reverse;
+            /* REVERSE for bottom alignment */
+            gap: 5px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 10px;
+            opacity: 0.8;
+            flex-shrink: 0;
+        }
+
+        .log-time {
+            color: #555;
+        }
+
+        .log-success {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .log-info {
+            color: var(--text-main);
+        }
+
+        .log-warn {
+            color: #ffaa00;
+        }
+
+        .log-error {
+            color: #ff3333;
+        }
+
+        /* CONTROLS */
+        .controls {
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            background: #111;
+            border-top: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        button {
+            background: #222;
+            border: 1px solid #444;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: var(--font-stack);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        button.primary {
+            background: var(--accent-dim);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .small-note {
+            font-size: 0.7rem;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>MANIPULUS v1.0 <span style="font-size:0.5em; opacity:0.5;">// INTENT-VALIDATION OS</span></h1>
+        <div class="status-badge" id="system-status">SYSTEM READY</div>
+    </header>
+
+    <main>
+        <!-- LEFT PANEL: CAMERA VIEW -->
+        <div class="vision-panel">
+            <div id="video-container">
+                <video id="video" autoplay muted></video>
+                <canvas id="overlay"></canvas>
+
+                <div class="zones-layer">
+                    <!-- Zone 1: Lamp -->
+                    <div class="zone" id="zone-left">
+                        <div class="validation-indicator">
+                            <svg class="progress-ring" viewBox="0 0 120 120">
+                                <circle class="bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="progress" id="ring-left" cx="60" cy="60" r="50"></circle>
+                            </svg>
+                        </div>
+                        <div class="zone-label">ZONE A: LAMP</div>
+                    </div>
+
+                    <!-- Zone 2: TV -->
+                    <div class="zone" id="zone-center">
+                        <div class="validation-indicator">
+                            <svg class="progress-ring" viewBox="0 0 120 120">
+                                <circle class="bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="progress" id="ring-center" cx="60" cy="60" r="50"></circle>
+                            </svg>
+                        </div>
+                        <div class="zone-label">ZONE B: TV</div>
+                    </div>
+
+                    <!-- Zone 3: Coffee -->
+                    <div class="zone" id="zone-right">
+                        <div class="validation-indicator">
+                            <svg class="progress-ring" viewBox="0 0 120 120">
+                                <circle class="bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="progress" id="ring-right" cx="60" cy="60" r="50"></circle>
+                            </svg>
+                        </div>
+                        <div class="zone-label">ZONE C: COFFEE</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: INFO -->
+        <div class="data-panel">
+
+            <!-- BLUEPRINT -->
+            <div class="blueprint-container">
+                <div class="panel-header">SPATIAL BLUEPRINT</div>
+                <div class="room-map">
+                    <!-- Simple SVG Room Map -->
+                    <svg class="map-svg" viewBox="0 0 200 150">
+                        <!-- Room Outline -->
+                        <rect x="10" y="10" width="180" height="130" fill="none" stroke="#444" stroke-width="2" />
+
+                        <!-- Zone A: Lamp (Left Top) -->
+                        <circle id="map-lamp" class="map-obj" cx="40" cy="40" r="15" />
+                        <text x="35" y="70" fill="#666" font-size="8">LAMP</text>
+
+                        <!-- Zone B: TV (Center Bottom) -->
+                        <rect id="map-tv" class="map-obj" x="70" y="100" width="60" height="10" rx="2" />
+                        <text x="90" y="90" fill="#666" font-size="8" text-anchor="middle">TV</text>
+
+                        <!-- Zone C: Coffee (Right Top) -->
+                        <rect id="map-coffee" class="map-obj" x="140" y="30" width="30" height="30" rx="4" />
+                        <circle cx="155" cy="45" r="8" fill="none" stroke="#444" stroke-width="1" />
+                        <text x="155" y="70" fill="#666" font-size="8" text-anchor="middle">COFFEE</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- CONSOLE -->
+            <div class="console-container">
+                <div class="panel-header">SYSTEM LOG</div>
+                <div class="console-logs" id="console-logs">
+                    <div class="log-entry">
+                        <span class="log-time">[SYSTEM]</span>
+                        <span class="log-info">Initializing Manipulus Core...</span>
+                    </div>
+                    <!-- Logs go here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="controls">
+        <button id="toggle-video" class="primary">START CAMERA</button>
+        <span class="spacer"></span>
+        <button onclick="manualTrigger('left')">FORCE: LAMP</button>
+        <button onclick="manualTrigger('center')">FORCE: TV</button>
+        <button onclick="manualTrigger('right')">FORCE: COFFEE</button>
+        <span class="spacer"></span>
+        <span class="small-note">HANDTRACK JS v0.0.1</span>
+    </div>
+
+    <!-- MAIN LOGIC SCRIPT -->
+    <script>
+        // --- CONFIGURATION ---
+        const ZONE_CONFIG = {
+            'left': { 
+                name: 'ZONE A (LAMP)', 
+                dwell: 3000, 
+                minScore: 0.6 
+            },
+            'center': { 
+                name: 'ZONE B (TV)', 
+                dwell: 4000, // 4s Dwell for TV
+                minScore: 0.8 // 0.8 Score for TV
+            },
+            'right': { 
+                name: 'ZONE C (COFFEE)', 
+                dwell: 3000, 
+                minScore: 0.6 
+            }
+        };
+        
+        // --- STATE ---
+        let currentZone = null;
+        let dwellStartTime = 0;
+        let isVideoPlaying = false;
+        let model = null;
+        let validatedZones = new Set(); 
+
+        // Elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('overlay');
+        const context = canvas.getContext('2d');
+        const logContainer = document.getElementById('console-logs');
+        const btnToggle = document.getElementById('toggle-video');
+
+        // Handtrack Model Params
+        const modelParams = {
+            flipHorizontal: true, 
+            maxNumBoxes: 1, 
+            iouThreshold: 0.5, 
+            scoreThreshold: 0.6, // Low base, we filter manually
+        };
+
+        // --- CORE FUNCTIONS ---
+
+        function log(msg, type = 'info') {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let typeClass = 'log-info';
+            if (type === 'success') typeClass = 'log-success';
+            if (type === 'warn') typeClass = 'log-warn';
+            if (type === 'error') typeClass = 'log-error';
+
+            entry.innerHTML = `
+                <span class="log-time">[${timeStr}]</span>
+                <span class="${typeClass}">${msg}</span>
+            `;
+            
+            // PREPEND: Since we use column-reverse, the "bottom" visual is the "beginning" of the DOM list technically?
+            // box-direction: normal implies Start->End.
+            // column-reverse: Start is Bottom.
+            // If we prepend (add as first child), it sits at Start (Bottom).
+            // So subsequent children (older logs) go "Up". 
+            // Correct.
+            logContainer.prepend(entry);
+        }
+
+        // --- MAP VISUALIZATION ---
+        function highlightMap(zone) {
+            // Reset all
+            document.querySelectorAll('.map-obj').forEach(el => el.classList.remove('active'));
+            
+            if (!zone) return;
+
+            let targetId = '';
+            if (zone === 'left') targetId = 'map-lamp';
+            if (zone === 'center') targetId = 'map-tv';
+            if (zone === 'right') targetId = 'map-coffee';
+
+            const el = document.getElementById(targetId);
+            if (el) el.classList.add('active');
+        }
+
+        // --- DWELL LOGIC ---
+        function updateDwell(detectedZone) {
+            const now = Date.now();
+            
+            // 1. Determine if zone changed
+            if (detectedZone !== currentZone) {
+                
+                // AUDIT: If we were in a zone AND validation wasn't complete
+                if (currentZone && !validatedZones.has(currentZone)) {
+                   const config = ZONE_CONFIG[currentZone];
+                   const elapsed = now - dwellStartTime;
+                   // Use 500ms threshold to avoid logging flickering
+                   if (elapsed < config.dwell && elapsed > 500) {
+                        log(`[LOG] Intent Abandoned: Resetting Validation (${config.name})`, 'warn');
+                   }
+                }
+
+                // Reset previous zone UI
+                if (currentZone) {
+                    resetZoneUI(currentZone);
+                }
+                
+                // Start new zone
+                currentZone = detectedZone;
+                validatedZones.clear(); // Reset validation state
+
+                if (currentZone) {
+                    dwellStartTime = now;
+                    log(`Presence detected: ${ZONE_CONFIG[currentZone].name}`);
+                } else {
+                    highlightMap(null); 
+                }
+            }
+
+            // 2. Update Progress if in a zone
+            if (currentZone) {
+                const config = ZONE_CONFIG[currentZone];
+                const elapsed = now - dwellStartTime;
+                const progress = Math.min(elapsed / config.dwell, 1);
+                
+                updateRingUI(currentZone, progress);
+                
+                // 3. Validation
+                if (progress >= 1 && !validatedZones.has(currentZone)) {
+                     validateIntent(currentZone);
+                     validatedZones.add(currentZone); 
+                }
+            }
+        }
+
+        function validateIntent(zone) {
+            const config = ZONE_CONFIG[zone];
+            log(`INTENT VALIDATED: ${config.name}`, 'success');
+            log(`Executing Logic Toggle...`, 'success');
+            highlightMap(zone);
+        }
+
+        function resetZoneUI(zone) {
+            const zoneEl = document.getElementById(`zone-${zone}`);
+            if (zoneEl) zoneEl.classList.remove('active');
+            
+            const ring = document.getElementById(`ring-${zone}`);
+            if (ring) ring.style.strokeDashoffset = 314;
+        }
+
+        function updateRingUI(zone, progress) {
+            const zoneEl = document.getElementById(`zone-${zone}`);
+            if (zoneEl) zoneEl.classList.add('active');
+
+            const ring = document.getElementById(`ring-${zone}`);
+            if (ring) {
+                // 314 is full circumference
+                const offset = 314 - (314 * progress);
+                ring.style.strokeDashoffset = offset;
+            }
+        }
+
+        // --- VISION LOOP ---
+        function runDetection() {
+            model.detect(video).then(predictions => {
+                
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                
+                let detectedZone = null;
+
+                if (predictions.length > 0) {
+                    // Get the primary hand (highest score)
+                    const hand = predictions[0];
+                    const [x, y, w, h] = hand.bbox;
+                    const centerX = x + w/2;
+                    const score = hand.score;
+
+                    // Draw clean indicator
+                    context.strokeStyle = "#0fdbaf";
+                    context.lineWidth = 2;
+                    context.strokeRect(x, y, w, h);
+
+                    // Determine Raw Zone
+                    let rawZone = null;
+                    const width = video.width || 640;
+                    
+                    if (centerX < width / 3) {
+                        rawZone = 'left';  // Zone A
+                    } else if (centerX < (width * 2) / 3) {
+                        rawZone = 'center'; // Zone B
+                    } else {
+                        rawZone = 'right'; // Zone C
+                    }
+
+                    // Check Thresholds
+                    if (rawZone) {
+                        const config = ZONE_CONFIG[rawZone];
+                        // If score is enough, we accept it
+                        if (score >= config.minScore) {
+                            detectedZone = rawZone;
+                        } 
+                    }
+                }
+
+                updateDwell(detectedZone);
+
+                if (isVideoPlaying) {
+                    requestAnimationFrame(runDetection);
+                }
+            });
+        }
+
+        function startVideo() {
+            handTrack.startVideo(video).then(status => {
+                if (status) {
+                    log("Camera initiated. Tracker starting...", "info");
+                    isVideoPlaying = true;
+                    btnToggle.innerText = "STOP CAMERA";
+                    
+                    video.onloadedmetadata = () => {
+                         canvas.width = video.videoWidth;
+                         canvas.height = video.videoHeight;
+                    };
+                    
+                    runDetection();
+                } else {
+                    log("Camera failed to start.", "warn");
+                }
+            });
+        }
+
+        function stopVideo() {
+            handTrack.stopVideo(video);
+            isVideoPlaying = false;
+            btnToggle.innerText = "START CAMERA";
+            log("Camera stopped.", "warn");
+            highlightMap(null);
+            currentZone = null;
+        }
+
+        // --- INIT ---
+        
+        // Manual Trigger for demo
+        window.manualTrigger = (zone) => {
+            log(`[MANUAL OVERRIDE] Triggering ${ZONE_CONFIG[zone].name}...`, 'warn');
+            // Simulate full dwell instantly
+            updateDwell(zone); 
+            
+            // Visual override animation
+            let p = 0;
+            const interval = setInterval(() => {
+                p += 0.1;
+                updateRingUI(zone, p);
+                if (p >= 1) {
+                    clearInterval(interval);
+                    validateIntent(zone);
+                    validatedZones.add(zone); // Mark as done
+                    
+                    setTimeout(() => {
+                        resetZoneUI(zone);
+                        currentZone = null; 
+                        validatedZones.clear();
+                    }, 1000);
+                }
+            }, 50);
+        };
+
+        btnToggle.addEventListener('click', () => {
+            if (!isVideoPlaying) {
+                startVideo();
+            } else {
+                stopVideo();
+            }
+        });
+
+        // Load Model
+        log("Loading Neural Network (HandTrack.js)...");
+        handTrack.load(modelParams).then(lmodel => {
+            model = lmodel;
+            log("Model Loaded. System Ready.", "success");
+            document.getElementById('system-status').innerText = "SYSTEM ONLINE";
+            document.getElementById('system-status').style.borderColor = "#0fdbaf";
+        });
+
+    </script>
+</body>
+
+</html>

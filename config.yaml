@@ -3,15 +3,9 @@
 # Defines sensitivity thresholds and interaction boundaries.
 # Actual gesture mappings are loaded from the active profile.
 
-system:
-  sample_rate_ms: 30
-  debounce_window_ms: 1000
-  
-interaction:
-  # Interaction zone depth (normalized)
-  activation_threshold: 0.6
-  release_threshold: 0.4
-
-feedback:
-  visual_overlay: false
-  haptic_enabled: false
+settings:
+  debounce_seconds: 1.0
+  camera_index: 0
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+  show_camera_preview: true
