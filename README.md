@@ -1,4 +1,4 @@
-Manipulus
+#Manipulus
 
 Manipulus is a research-driven project exploring a new interaction paradigm between humans and physical environments.
 
