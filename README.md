@@ -1,43 +1,106 @@
-# MANIPULUS
+Manipulus
 
-The Invisible Interface.
+Manipulus is a research-driven project exploring a new interaction paradigm between humans and physical environments.
 
-Manipulus is an experimental desktop system exploring gesture-based, zero-UI interaction. It operates on the belief that the most advanced technology is the kind you do not notice.
+At its core, Manipulus investigates how intent — not commands, apps, or continuous attention — can become the primary interface between people and machines.
 
-## Philosophy
+This repository represents early-stage exploratory work toward that goal.
 
-Modern environments suffer from interaction overload. Screens prompt for attention; voice assistants interrupt silence.
+The Problem Space
 
-Manipulus prioritizes:
+Modern environments are operated through layers of friction:
 
-Zero UI
-Intent over commands
-Silence over noise
-Local-first operation
+Screens
 
-We use computer vision not for surveillance, but for interpretation. By enabling control through movement and stillness, we remove the dashboard and return calm to the digital workspace.
+Apps
 
-## System Overview
+Voice commands
 
-Manipulus runs silently in the background. It transforms a standard webcam into a sensor for intent, translating a limited set of physical gestures into system actions.
+Cloud-mediated automation
 
-It is designed to be invisible—no always-on windows, no status overlays, no visual feedback unless requested.
+These systems require users to translate intent into explicit instructions, breaking flow and introducing latency, privacy risk, and cognitive overhead.
 
-## Status
+Manipulus asks a different question:
 
-**Experimental.**
+What if environments responded to validated human intent instead of explicit commands?
 
-This system is in active development. It is a living research project. Features, behaviors, and scope will change.
+The Manipulus Thesis
 
-## Privacy
+Manipulus is built around three foundational principles:
 
-Trust is foundational to an invisible interface.
+1. Intent Over Commands
 
-Visual input is processed 100% locally.
-No video, images, or biometric data are stored or transmitted.
-No cloud services or accounts are utilized by default.
-Future features involving data will remain opt-in.
+Human behavior already expresses intent through presence, attention, and action.
+Manipulus explores how systems can recognize deliberate intent while ignoring noise.
 
-## Disclaimer
+2. Privacy as a Physical Property
 
-Provided as-is. This software is experimental. Users act as their own integrators and assume responsibility for connected systems.
+True privacy is achieved when intelligence remains local by design.
+Manipulus is researched as a local-first system, not a cloud-dependent service.
+
+3. Invisible Interaction
+
+The goal is not another interface, but the absence of one.
+Interaction should feel spatial, implicit, and calm — not interruptive.
+
+What This Repository Is
+
+This repository contains non-production exploratory artifacts related to:
+
+Intent validation logic
+
+Human–environment interaction models
+
+System behavior under ambiguity
+
+UI concepts for transparency and trust
+
+These artifacts are not representative of the final system, architecture, or sensing stack.
+
+They exist to test reasoning flows, not to showcase features.
+
+What This Repository Is Not
+
+❌ A consumer product
+
+❌ A finished SDK or platform
+
+❌ A complete technical disclosure
+
+❌ A smart-home controller
+
+Many critical components of Manipulus — including sensing strategy, inference models, and system architecture — are intentionally not present here.
+
+Project Status
+
+Manipulus is in an early research and validation phase.
+
+Development is focused on:
+
+Conceptual clarity
+
+Logical correctness
+
+Interaction integrity
+
+Public materials are deliberately minimal.
+
+Intellectual Integrity
+
+Manipulus values honest prototypes over impressive illusions.
+
+Demonstrations prioritize:
+
+Transparency of system reasoning
+
+Deliberate latency over accidental activation
+
+Clear boundaries between concept validation and implementation
+
+This approach is intentional.
+
+Contact
+
+Manipulus is currently not accepting external contributions.
+
+For inquiries related to research, collaboration, or future access, please reach out via official channels.
