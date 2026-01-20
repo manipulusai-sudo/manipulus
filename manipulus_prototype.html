@@ -7,6 +7,8 @@
     <title>MANIPULUS // INTENT-VALIDATION OS</title>
     <!-- Load Handtrack.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/handtrackjs/dist/handtrack.min.js"></script>
+    <!-- Load Supabase Client for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #050505;
@@ -358,6 +360,102 @@
             font-size: 0.7rem;
             color: #555;
         }
+
+        /* SOVEREIGN ANALYTICS TOGGLE */
+        .analytics-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .analytics-btn {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            color: #666;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-family: var(--font-stack);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .analytics-btn:hover {
+            border-color: #444;
+            color: #888;
+        }
+
+        .analytics-btn.active {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .analytics-dot {
+            width: 6px;
+            height: 6px;
+            background: #333;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .analytics-btn.active .analytics-dot {
+            background: var(--accent-color);
+            box-shadow: 0 0 8px var(--accent-color);
+        }
+
+        .analytics-panel {
+            position: absolute;
+            bottom: 40px;
+            right: 0;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            padding: 16px 20px;
+            min-width: 200px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .analytics-panel.open {
+            display: flex;
+        }
+
+        .analytics-header {
+            font-size: 0.65rem;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 8px;
+        }
+
+        .analytics-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .analytics-label {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .analytics-count {
+            font-size: 1rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .analytics-loading {
+            font-size: 0.7rem;
+            color: #444;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -464,33 +562,52 @@
         <span class="small-note">HANDTRACK JS v0.0.1</span>
     </div>
 
+    <!-- SOVEREIGN ANALYTICS TOGGLE -->
+    <div class="analytics-toggle">
+        <div class="analytics-panel" id="analytics-panel">
+            <div class="analytics-header">Sovereign Analytics</div>
+            <div class="analytics-row">
+                <span class="analytics-label">Arrivals</span>
+                <span class="analytics-count" id="count-arrivals">—</span>
+            </div>
+            <div class="analytics-row">
+                <span class="analytics-label">Intents Validated</span>
+                <span class="analytics-count" id="count-intents">—</span>
+            </div>
+        </div>
+        <button class="analytics-btn" id="analytics-btn" onclick="toggleAnalyticsPanel()">
+            <span class="analytics-dot"></span>
+            Analytics
+        </button>
+    </div>
+
     <!-- MAIN LOGIC SCRIPT -->
     <script>
         // --- CONFIGURATION ---
         const ZONE_CONFIG = {
-            'left': { 
-                name: 'ZONE A (LAMP)', 
-                dwell: 3000, 
-                minScore: 0.6 
+            'left': {
+                name: 'ZONE A (LAMP)',
+                dwell: 3000,
+                minScore: 0.6
             },
-            'center': { 
-                name: 'ZONE B (TV)', 
+            'center': {
+                name: 'ZONE B (TV)',
                 dwell: 4000, // 4s Dwell for TV
                 minScore: 0.8 // 0.8 Score for TV
             },
-            'right': { 
-                name: 'ZONE C (COFFEE)', 
-                dwell: 3000, 
-                minScore: 0.6 
+            'right': {
+                name: 'ZONE C (COFFEE)',
+                dwell: 3000,
+                minScore: 0.6
             }
         };
-        
+
         // --- STATE ---
         let currentZone = null;
         let dwellStartTime = 0;
         let isVideoPlaying = false;
         let model = null;
-        let validatedZones = new Set(); 
+        let validatedZones = new Set();
 
         // Elements
         const video = document.getElementById('video');
@@ -501,9 +618,9 @@
 
         // Handtrack Model Params
         const modelParams = {
-            flipHorizontal: true, 
-            maxNumBoxes: 1, 
-            iouThreshold: 0.5, 
+            flipHorizontal: true,
+            maxNumBoxes: 1,
+            iouThreshold: 0.5,
             scoreThreshold: 0.6, // Low base, we filter manually
         };
 
@@ -514,7 +631,7 @@
             const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
             const entry = document.createElement('div');
             entry.className = 'log-entry';
-            
+
             let typeClass = 'log-info';
             if (type === 'success') typeClass = 'log-success';
             if (type === 'warn') typeClass = 'log-warn';
@@ -524,7 +641,7 @@
                 <span class="log-time">[${timeStr}]</span>
                 <span class="${typeClass}">${msg}</span>
             `;
-            
+
             // PREPEND: Since we use column-reverse, the "bottom" visual is the "beginning" of the DOM list technically?
             // box-direction: normal implies Start->End.
             // column-reverse: Start is Bottom.
@@ -538,7 +655,7 @@
         function highlightMap(zone) {
             // Reset all
             document.querySelectorAll('.map-obj').forEach(el => el.classList.remove('active'));
-            
+
             if (!zone) return;
 
             let targetId = '';
@@ -553,25 +670,25 @@
         // --- DWELL LOGIC ---
         function updateDwell(detectedZone) {
             const now = Date.now();
-            
+
             // 1. Determine if zone changed
             if (detectedZone !== currentZone) {
-                
+
                 // AUDIT: If we were in a zone AND validation wasn't complete
                 if (currentZone && !validatedZones.has(currentZone)) {
-                   const config = ZONE_CONFIG[currentZone];
-                   const elapsed = now - dwellStartTime;
-                   // Use 500ms threshold to avoid logging flickering
-                   if (elapsed < config.dwell && elapsed > 500) {
+                    const config = ZONE_CONFIG[currentZone];
+                    const elapsed = now - dwellStartTime;
+                    // Use 500ms threshold to avoid logging flickering
+                    if (elapsed < config.dwell && elapsed > 500) {
                         log(`[LOG] Intent Abandoned: Resetting Validation (${config.name})`, 'warn');
-                   }
+                    }
                 }
 
                 // Reset previous zone UI
                 if (currentZone) {
                     resetZoneUI(currentZone);
                 }
-                
+
                 // Start new zone
                 currentZone = detectedZone;
                 validatedZones.clear(); // Reset validation state
@@ -580,7 +697,7 @@
                     dwellStartTime = now;
                     log(`Presence detected: ${ZONE_CONFIG[currentZone].name}`);
                 } else {
-                    highlightMap(null); 
+                    highlightMap(null);
                 }
             }
 
@@ -589,13 +706,13 @@
                 const config = ZONE_CONFIG[currentZone];
                 const elapsed = now - dwellStartTime;
                 const progress = Math.min(elapsed / config.dwell, 1);
-                
+
                 updateRingUI(currentZone, progress);
-                
+
                 // 3. Validation
                 if (progress >= 1 && !validatedZones.has(currentZone)) {
-                     validateIntent(currentZone);
-                     validatedZones.add(currentZone); 
+                    validateIntent(currentZone);
+                    validatedZones.add(currentZone);
                 }
             }
         }
@@ -605,12 +722,15 @@
             log(`INTENT VALIDATED: ${config.name}`, 'success');
             log(`Executing Logic Toggle...`, 'success');
             highlightMap(zone);
+
+            // Track Intent Validated event
+            trackEvent('Intent Validated');
         }
 
         function resetZoneUI(zone) {
             const zoneEl = document.getElementById(`zone-${zone}`);
             if (zoneEl) zoneEl.classList.remove('active');
-            
+
             const ring = document.getElementById(`ring-${zone}`);
             if (ring) ring.style.strokeDashoffset = 314;
         }
@@ -630,16 +750,16 @@
         // --- VISION LOOP ---
         function runDetection() {
             model.detect(video).then(predictions => {
-                
+
                 context.clearRect(0, 0, canvas.width, canvas.height);
-                
+
                 let detectedZone = null;
 
                 if (predictions.length > 0) {
                     // Get the primary hand (highest score)
                     const hand = predictions[0];
                     const [x, y, w, h] = hand.bbox;
-                    const centerX = x + w/2;
+                    const centerX = x + w / 2;
                     const score = hand.score;
 
                     // Draw clean indicator
@@ -650,7 +770,7 @@
                     // Determine Raw Zone
                     let rawZone = null;
                     const width = video.width || 640;
-                    
+
                     if (centerX < width / 3) {
                         rawZone = 'left';  // Zone A
                     } else if (centerX < (width * 2) / 3) {
@@ -665,7 +785,7 @@
                         // If score is enough, we accept it
                         if (score >= config.minScore) {
                             detectedZone = rawZone;
-                        } 
+                        }
                     }
                 }
 
@@ -683,12 +803,12 @@
                     log("Camera initiated. Tracker starting...", "info");
                     isVideoPlaying = true;
                     btnToggle.innerText = "STOP CAMERA";
-                    
+
                     video.onloadedmetadata = () => {
-                         canvas.width = video.videoWidth;
-                         canvas.height = video.videoHeight;
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
                     };
-                    
+
                     runDetection();
                 } else {
                     log("Camera failed to start.", "warn");
@@ -706,13 +826,13 @@
         }
 
         // --- INIT ---
-        
+
         // Manual Trigger for demo
         window.manualTrigger = (zone) => {
             log(`[MANUAL OVERRIDE] Triggering ${ZONE_CONFIG[zone].name}...`, 'warn');
             // Simulate full dwell instantly
-            updateDwell(zone); 
-            
+            updateDwell(zone);
+
             // Visual override animation
             let p = 0;
             const interval = setInterval(() => {
@@ -722,10 +842,10 @@
                     clearInterval(interval);
                     validateIntent(zone);
                     validatedZones.add(zone); // Mark as done
-                    
+
                     setTimeout(() => {
                         resetZoneUI(zone);
-                        currentZone = null; 
+                        currentZone = null;
                         validatedZones.clear();
                     }, 1000);
                 }
@@ -748,6 +868,96 @@
             document.getElementById('system-status').innerText = "SYSTEM ONLINE";
             document.getElementById('system-status').style.borderColor = "#0fdbaf";
         });
+
+        // --- SOVEREIGN ANALYTICS (SUPABASE) ---
+        const SUPABASE_URL = 'https://qhppvasesesyobvmfpbp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFocHB2YXNlc2VzeW9idm1mcGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5MDg0OTIsImV4cCI6MjA4NDQ4NDQ5Mn0.TOiynPYDsgghPTu_3pMG9pwqnag4oNAtjsJTeaqkLKs';
+
+        let supabaseClient = null;
+
+        // Initialize Supabase when ready
+        function initSupabase() {
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                log('[ANALYTICS] Supabase connected.', 'info');
+                trackEvent('Arrival');
+            } else {
+                // Retry after 100ms if library not loaded yet
+                setTimeout(initSupabase, 100);
+            }
+        }
+
+        // Track Event Function
+        async function trackEvent(eventType) {
+            if (!supabaseClient) {
+                console.warn('[Analytics] Client not ready');
+                return;
+            }
+            try {
+                const { error } = await supabaseClient
+                    .from('analytics_events')
+                    .insert({ event_type: eventType });
+
+                if (error) {
+                    console.warn('[Analytics] Failed to track:', error.message);
+                } else {
+                    log(`[ANALYTICS] Event tracked: ${eventType}`, 'info');
+                }
+            } catch (err) {
+                console.warn('[Analytics] Error:', err);
+            }
+        }
+
+        // Fetch Counts for Display
+        async function fetchAnalyticsCounts() {
+            if (!supabaseClient) {
+                return { arrivals: '?', intents: '?' };
+            }
+            try {
+                const { data, error } = await supabaseClient
+                    .from('analytics_events')
+                    .select('event_type');
+
+                if (error) {
+                    console.warn('[Analytics] Failed to fetch:', error.message);
+                    return { arrivals: '?', intents: '?' };
+                }
+
+                const arrivals = data.filter(e => e.event_type === 'Arrival').length;
+                const intents = data.filter(e => e.event_type === 'Intent Validated').length;
+
+                return { arrivals, intents };
+            } catch (err) {
+                console.warn('[Analytics] Error:', err);
+                return { arrivals: '?', intents: '?' };
+            }
+        }
+
+        // Toggle Analytics Panel
+        window.toggleAnalyticsPanel = async function () {
+            const panel = document.getElementById('analytics-panel');
+            const btn = document.getElementById('analytics-btn');
+            const isOpen = panel.classList.contains('open');
+
+            if (isOpen) {
+                panel.classList.remove('open');
+                btn.classList.remove('active');
+            } else {
+                panel.classList.add('open');
+                btn.classList.add('active');
+
+                // Update counts
+                document.getElementById('count-arrivals').textContent = '...';
+                document.getElementById('count-intents').textContent = '...';
+
+                const counts = await fetchAnalyticsCounts();
+                document.getElementById('count-arrivals').textContent = counts.arrivals;
+                document.getElementById('count-intents').textContent = counts.intents;
+            }
+        };
+
+        // Start initialization
+        initSupabase();
 
     </script>
 </body>
