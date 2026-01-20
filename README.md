@@ -1,76 +1,156 @@
 # Manipulus
 
-Manipulus is a research-driven project exploring a new interaction paradigm between humans and physical environments.
+**Intent‑Validated Non‑Verbal Computing**
 
-At its core, Manipulus investigates how **intent** — not commands, apps, or continuous attention — can become the primary interface between people and machines.
+Manipulus is an open‑source research project exploring a future beyond the *Command Era* of technology.
+Instead of issuing explicit commands (apps, buttons, wake‑words), Manipulus investigates how **human presence, gaze, and gesture** can be translated into **validated intent** — locally, privately, and invisibly.
 
-This repository represents early-stage exploratory work toward that goal.
+This repository documents the *concept*, *architecture*, and *prototype direction* of Manipulus. It is not a consumer product, and it does not collect or transmit personal data.
 
-## The Problem Space
+---
 
-Modern environments are operated through layers of friction:
-*   Screens
-*   Apps
-*   Voice commands
-*   Cloud-mediated automation
+## Vision
 
-These systems require users to translate intent into explicit instructions, breaking flow and introducing latency, privacy risk, and cognitive overhead.
+To liberate humans from the Command Era of technology.
 
-Manipulus asks a different question:
-**What if environments responded to validated human intent instead of explicit commands?**
+We believe computing should adapt to humans — not the other way around.
+A home, device, or system should respond naturally to *where you are*, *what you’re attending to*, and *what you intend* — without forcing you to reach for an app, speak a command, or surrender privacy.
 
-## The Manipulus Thesis
+Manipulus aims to become an **Intent‑Validation Operating Layer**:
 
-Manipulus is built around three foundational principles:
+* Invisible by default
+* Local‑first and private
+* Activated only by sustained, verifiable human intent
 
-### 1. Intent Over Commands
-Human behavior already expresses intent through presence, attention, and action. Manipulus explores how systems can recognize deliberate intent while ignoring noise.
+---
 
-### 2. Privacy as a Physical Property
-True privacy is achieved when intelligence remains local by design. Manipulus is researched as a local-first system, not a cloud-dependent service.
+## What Manipulus Is
 
-### 3. Invisible Interaction
-The goal is not another interface, but the absence of one. Interaction should feel spatial, implicit, and calm — not interruptive.
+Manipulus is an **open‑source Non‑Verbal Communication (NVC) platform**.
 
-## What This Repository Is
+You can think of it as:
 
-This repository contains non-production exploratory artifacts related to:
-*   Intent validation logic
-*   Human–environment interaction models
-*   System behavior under ambiguity
-*   UI concepts for transparency and trust
+> *External Telepathy for the 99%*
 
-These artifacts are not representative of the final system, architecture, or sensing stack. They exist to test reasoning flows, not to showcase features.
+It explores BCI‑like capabilities (attention, intent, context) **without implants, surgery, cloud dependence, or biometric storage**.
 
-## What This Repository Is Not
+At its core, Manipulus answers one question:
 
-❌ A consumer product  
-❌ A finished SDK or platform  
-❌ A complete technical disclosure  
-❌ A smart-home controller  
+> *“Is this movement random — or is this intentional?”*
 
-Many critical components of Manipulus — including sensing strategy, inference models, and system architecture — are intentionally not present here.
+Only when intent is validated does the system act.
 
-## Project Status
+---
 
-Manipulus is in an early research and validation phase. Development is focused on:
-*   Conceptual clarity
-*   Logical correctness
-*   Interaction integrity
+## What Manipulus Is Not
 
-Public materials are deliberately minimal.
+* ❌ Not a gesture‑control toy
+* ❌ Not always‑listening
+* ❌ Not cloud‑dependent
+* ❌ Not a surveillance system
+* ❌ Not a consumer‑ready product
 
-## Intellectual Integrity
+Manipulus deliberately avoids twitchy, reactive automation. No action occurs without *temporal consistency* and *contextual confirmation*.
 
-Manipulus values honest prototypes over impressive illusions. Demonstrations prioritize:
-*   Transparency of system reasoning
-*   Deliberate latency over accidental activation
-*   Clear boundaries between concept validation and implementation
+---
 
-This approach is intentional.
+## Core Concept: Intent Validation
 
-## Contact
+Traditional automation reacts to **events**.
 
-Manipulus is currently not accepting external contributions.
+Manipulus reacts to **validated intent**.
 
-For inquiries related to research, collaboration, or future access, please reach out via official channels.
+Intent is inferred only when multiple signals align *over time*, such as:
+
+* Gaze direction
+* Skeletal posture
+* Gesture persistence
+* Spatial context
+* Duration thresholds
+
+Example (conceptual):
+
+> If gaze is maintained toward a defined zone *and* a gesture is sustained beyond a validation window → intent is confirmed → action is allowed.
+
+This reduces false positives and preserves human agency.
+
+---
+
+## Prototyping Direction
+
+Manipulus progresses through small, verifiable prototypes whose sole purpose is to test whether **intent can be distinguished from noise** using non-verbal signals — locally and privately.
+
+These prototypes are intentionally minimal, disposable, and exploratory. Details are abstracted to avoid premature coupling to specific hardware, vendors, or implementations.
+
+---
+
+## Privacy & Safety Principles
+
+Manipulus is designed around strict constraints:
+
+* No biometric databases
+* No facial recognition
+* No identity profiling
+* No cloud streaming by default
+* No data resale
+
+Raw video is processed ephemerally for inference and is not stored.
+
+This repository contains **no keys, credentials, endpoints, or production secrets**.
+
+---
+
+## Repository Scope
+
+This repo may include:
+
+* Concept documentation
+* Architectural diagrams
+* Prototype logic descriptions
+* Research notes
+* Experimental code (clearly labeled)
+
+Anything that could compromise privacy or security is intentionally excluded.
+
+---
+
+## Status
+
+Manipulus is **early‑stage research**.
+
+* APIs may change
+* Concepts may evolve
+* Nothing here should be considered production‑ready
+
+The purpose is exploration, validation, and open discussion.
+
+---
+
+## Open Source & Contribution
+
+Manipulus is built in public to invite critique, not hype.
+
+If you’re interested in:
+
+* Non‑verbal interfaces
+* Local‑first AI
+* Human‑computer interaction
+* Post‑app computing
+
+You’re welcome to observe, question, or contribute thoughtfully.
+
+---
+
+## Disclaimer
+
+Manipulus is a research and experimental project.
+
+It does not make medical, cognitive, or behavioral claims.
+It is not a brain‑computer interface.
+It is not intended for surveillance, monitoring, or behavioral enforcement.
+
+Any demonstrations are conceptual prototypes only.
+
+---
+
+*Manipulus explores what computing could feel like when technology learns to wait for human intent — instead of interrupting it.*
